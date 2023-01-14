@@ -23,7 +23,9 @@ class RRTMotionPlanner(object):
     def generate_random_array(self):
         array = []
         for i in range(4):
-            array.append(random.uniform(-math.pi, math.pi))
+            array.append(random.uniform(-math.pi/2, math.pi/2))
+        array[0]=random.uniform(0, math.pi/2)
+        array[1]=random.uniform(-array[0], math.pi/2-array[0])
         return np.asarray(array)
     def plan(self):
         '''
@@ -95,7 +97,20 @@ class RRTMotionPlanner(object):
         @param rand_config The sampled configuration.
         '''
         # TODO: Task 2.3
-        return rand_config
+
+        threshold = 0.2
+        if self.ext_mode == 'E1':
+            return rand_config
+
+        diff_config=rand_config-near_config
+        for i in range(len(diff_config)):
+            if diff_config[i] > threshold:
+                diff_config[i] = threshold
+            if diff_config[i] < (-threshold):
+                diff_config[i] = -threshold
+        #diff_config=diff_config*0.1+near_config
+
+        return diff_config#rand_config
 
         #pass
     def dijkstra(self):
