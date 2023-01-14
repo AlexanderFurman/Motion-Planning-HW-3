@@ -23,9 +23,9 @@ class RRTMotionPlanner(object):
     def generate_random_array(self):
         array = []
         for i in range(4):
-            array.append(random.uniform(-math.pi/2, math.pi/2))
+            array.append(random.uniform(-math.pi, math.pi))
         array[0]=random.uniform(0, math.pi/2)
-        array[1]=random.uniform(-array[0], math.pi/2-array[0])
+        #array[1]=random.uniform(-array[0], math.pi/2-array[0])
         return np.asarray(array)
     def plan(self):
         '''
@@ -98,7 +98,7 @@ class RRTMotionPlanner(object):
         '''
         # TODO: Task 2.3
 
-        threshold = 0.2
+        threshold = 0.3
         if self.ext_mode == 'E1':
             return rand_config
 

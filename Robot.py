@@ -18,23 +18,6 @@ class Robot(object):
         # visibility distance for the robot's end-effector. Farther than that, the robot won't see any points.
         self.vis_dist = 60.0
 
-    def compute_distance(self, prev_config, next_config):
-        '''
-        Compute the euclidean distance betweeen two given configurations.
-        @param prev_config Previous configuration.
-        @param next_config Next configuration.
-        '''
-        # TODO: Task 2.2
-        # Create two LineString objects
-        line1 = LineString(self.compute_forward_kinematics(prev_config))
-        line2 = LineString(self.compute_forward_kinematics(next_config))
-
-        # Calculate the Euclidean distance between the two LineStrings
-        distance = line1.distance(line2)
-        print(distance)
-        return distance
-        #pass
-
     def compute_forward_kinematics(self, given_config):
         '''
         Compute the 2D position (x,y) of each one of the links (including end-effector) and return.
@@ -59,6 +42,29 @@ class Robot(object):
         # Return the list of link positions
         return np.asarray(link_positions)
         #pass
+
+    def compute_distance(self, prev_config, next_config):
+        '''
+        Compute the euclidean distance betweeen two given configurations.
+        @param prev_config Previous configuration.
+        @param next_config Next configuration.
+        '''
+        # TODO: Task 2.2
+        # Create two LineString objects
+        # a=self.compute_forward_kinematics(prev_config)
+        # b=self.compute_forward_kinematics(next_config)
+        #diff=b-a
+        diff=next_config-prev_config
+        distance=np.linalg.norm(diff)
+
+        #line1 = LineString(self.compute_forward_kinematics(prev_config))
+        #line2 = LineString(self.compute_forward_kinematics(next_config))
+        # Calculate the Euclidean distance between the two LineStrings
+        #distance = line1.distance(line2)
+        #print(distance)
+        return distance
+        #pass
+
 
     def compute_ee_angle(self, given_config):
         '''
