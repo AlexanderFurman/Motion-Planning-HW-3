@@ -30,7 +30,7 @@ class Robot(object):
         origin = np.array([0.0, 0.0])
         # Compute the position of each link
         position = origin
-        for i in range(len(given_config)):
+        for i in range(len(given_config)): 
             angle=given_config[i]
             if i > 0:
                 angle = sum(given_config[0:i+1]) # in case of relative angle

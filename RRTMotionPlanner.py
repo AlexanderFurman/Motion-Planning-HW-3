@@ -43,7 +43,7 @@ class RRTMotionPlanner(object):
         x_range=self.planning_env.xlimit
         y_range = self.planning_env.ylimit
         #sample state:
-        for i in range(200000): #number of iterations
+        for i in range(2000): #number of iterations
             if (np.random.uniform(0, 1) < self.goal_prob): #bias goal
                 #take target as sample
                 random_array=self.planning_env.goal
