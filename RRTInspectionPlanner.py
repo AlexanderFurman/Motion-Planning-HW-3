@@ -2,8 +2,8 @@ import numpy as np
 from RRTTree import RRTTree
 import time
 
-# np.random.seed(0)
-np.random.seed(1)
+np.random.seed(0)
+# np.random.seed(1)
 
 class RRTInspectionPlanner(object):
 

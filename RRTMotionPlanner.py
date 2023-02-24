@@ -19,6 +19,9 @@ class RRTMotionPlanner(object):
         # set search params
         self.ext_mode = ext_mode
         self.goal_prob = goal_prob
+        self.step_size = 0.5
+
+        self.goal_flag = False
 
     def generate_random_array(self):
         array = []
@@ -43,7 +46,8 @@ class RRTMotionPlanner(object):
         x_range=self.planning_env.xlimit
         y_range = self.planning_env.ylimit
         #sample state:
-        for i in range(2000): #number of iterations
+        # for i in range(2000): #number of iterations
+        while not self.goal_flag:
             if (np.random.uniform(0, 1) < self.goal_prob): #bias goal
                 #take target as sample
                 random_array=self.planning_env.goal
@@ -55,7 +59,7 @@ class RRTMotionPlanner(object):
 
             if np.isnan(x_ext[0]): #same node
                 continue
-            ans2=MapEnvironment.edge_validity_checker(self.planning_env,x_near[1],x_ext)
+            ans2=(MapEnvironment.edge_validity_checker(self.planning_env,x_near[1],x_ext) and self.planning_env.config_validity_checker(x_ext))
             if ans2:
                 x_new_idx=self.tree.add_vertex(x_ext)
                 edge_cost=self.compute_cost([x_near[1],x_ext])
@@ -63,9 +67,11 @@ class RRTMotionPlanner(object):
 
         #calculate plan
             if self.tree.is_goal_exists(self.planning_env.goal):
+                self.goal_flag = True
                 print('goal exist')
-                plan = self.dijkstra()
-                break
+                # plan = self.dijkstra()
+
+        plan = self.find_plan()
 
 
         # print total path cost and time
@@ -98,55 +104,74 @@ class RRTMotionPlanner(object):
         '''
         # TODO: Task 2.3
 
-        threshold = 0.3
+        # threshold = 0.3
         if self.ext_mode == 'E1':
             return rand_config
 
-        diff_config=rand_config-near_config
-        for i in range(len(diff_config)):
-            if diff_config[i] > threshold:
-                diff_config[i] = threshold
-            if diff_config[i] < (-threshold):
-                diff_config[i] = -threshold
+        # diff_config=rand_config-near_config
+        # for i in range(len(diff_config)):
+        #     if diff_config[i] > threshold:
+        #         diff_config[i] = threshold
+        #     if diff_config[i] < (-threshold):
+        #         diff_config[i] = -threshold
         #diff_config=diff_config*0.1+near_config
+        step_dir = np.array(rand_config) - np.array(near_config)
+        length = np.linalg.norm(step_dir)
+        step = (step_dir / length) * min(self.step_size, length)
+        extended_config = near_config + step
+        
+        return extended_config
 
-        return diff_config#rand_config
+    def find_plan(self):
+        start_idx = self.tree.get_root_id()
+        current_idx, _ = self.tree.get_nearest_config(self.planning_env.goal)
+
+        plan = [self.tree.vertices[current_idx].config]
+
+        while current_idx != start_idx:
+            current_idx = self.tree.edges[current_idx]
+            plan.append(self.tree.vertices[current_idx].config)
+        print("plan =\n", plan)
+        plan.reverse()
+        return plan
 
         #pass
-    def dijkstra(self):
-        '''
-        shortest path in the tree
-        '''
-        srcIdx = self.tree.get_root_id()
-        dstIdx = self.tree.get_nearest_config(self.planning_env.goal)[0]
+    # def dijkstra(self):
+    #     '''
+    #     shortest path in the tree
+    #     '''
+    #     srcIdx = self.tree.get_root_id()
+    #     dstIdx = self.tree.get_nearest_config(self.planning_env.goal)[0]
 
-        # build dijkstra
-        #edges = self.tree.get_edges_as_states()
-        edges=self.tree.edges
-        nodes = self.tree.vertices# list(G.neighbors.keys())
-        nodes_list=list(nodes.keys())
-        dist = {node: float('inf') for node in nodes_list}
-        prev = {node: None for node in nodes_list}
-        dist[srcIdx] = 0
+    #     # build dijkstra
+    #     #edges = self.tree.get_edges_as_states()
+    #     edges=self.tree.edges
+    #     nodes = self.tree.vertices# list(G.neighbors.keys())
+    #     nodes_list=list(nodes.keys())
+    #     dist = {node: float('inf') for node in nodes_list}
+    #     prev = {node: None for node in nodes_list}
+    #     dist[srcIdx] = 0
 
-        while nodes_list:
-            curNode = min(nodes_list, key=lambda node: dist[node])
-            nodes_list.remove(curNode)
-            if dist[curNode] == float('inf'):
-                break
+    #     while nodes_list:
+    #         curNode = min(nodes_list, key=lambda node: dist[node])
+    #         nodes_list.remove(curNode)
+    #         if dist[curNode] == float('inf'):
+    #             break
 
-            neighbors = [key for key, value in edges.items() if value == curNode ]
-            for neighbor in neighbors:
-                newCost = dist[curNode] + nodes[neighbor].cost
-                if newCost < dist[neighbor]:
-                    dist[neighbor] = newCost
-                    prev[neighbor] = curNode
+    #         neighbors = [key for key, value in edges.items() if value == curNode ]
+    #         for neighbor in neighbors:
+    #             newCost = dist[curNode] + nodes[neighbor].cost
+    #             if newCost < dist[neighbor]:
+    #                 dist[neighbor] = newCost
+    #                 prev[neighbor] = curNode
 
-        #path
-        path = deque()
-        curNode = dstIdx
-        while prev[curNode] is not None:
-            path.appendleft(nodes[curNode].config)
-            curNode = prev[curNode]
-        path.appendleft(nodes[curNode].config)
-        return list(path)
+    #     #path
+    #     path = deque()
+    #     curNode = dstIdx
+    #     while prev[curNode] is not None:
+    #         path.appendleft(nodes[curNode].config)
+    #         curNode = prev[curNode]
+    #     path.appendleft(nodes[curNode].config)
+    #     return list(path)
+
+    
