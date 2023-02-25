@@ -54,7 +54,7 @@ class Robot(object):
         # a=self.compute_forward_kinematics(prev_config)
         # b=self.compute_forward_kinematics(next_config)
         #diff=b-a
-        diff=next_config-prev_config
+        diff=np.array(next_config)-np.array(prev_config)
         distance=np.linalg.norm(diff)
 
         #line1 = LineString(self.compute_forward_kinematics(prev_config))

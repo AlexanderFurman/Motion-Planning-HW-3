@@ -23,6 +23,22 @@ class RRTMotionPlanner(object):
 
         self.goal_flag = False
 
+        #statistics
+        self.stats = {}
+        self.stats['E1_0.05'] = []
+        self.stats['E2_0.05'] = []
+        self.stats['E1_0.2'] = []
+        self.stats['E2_0.2'] = []
+        self.current_stats_mode = ext_mode + "_" + str(goal_prob)
+
+    def reset(self, ext_mode, goal_prob):
+        self.tree = RRTTree(self.planning_env)
+        self.ext_mode = ext_mode
+        self.goal_prob = goal_prob
+        self.goal_flag = False
+        self.current_stats_mode = ext_mode + "_" + str(goal_prob)
+
+
     def generate_random_array(self):
         array = []
         for i in range(4):
@@ -30,6 +46,7 @@ class RRTMotionPlanner(object):
         array[0]=random.uniform(0, math.pi/2)
         #array[1]=random.uniform(-array[0], math.pi/2-array[0])
         return np.asarray(array)
+
     def plan(self):
         '''
         Compute and return the plan. The function should return a numpy array containing the states in the configuration space.
@@ -68,12 +85,12 @@ class RRTMotionPlanner(object):
         #calculate plan
             if self.tree.is_goal_exists(self.planning_env.goal):
                 self.goal_flag = True
-                print('goal exist')
+                # print('goal exist')
                 # plan = self.dijkstra()
 
         plan = self.find_plan()
 
-
+        self.stats[self.current_stats_mode].append([self.compute_cost(plan), time.time()-start_time])
         # print total path cost and time
         print('Total cost of path: {:.2f}'.format(self.compute_cost(plan)))
         print('Total time: {:.2f}'.format(time.time()-start_time))
@@ -119,7 +136,7 @@ class RRTMotionPlanner(object):
         length = np.linalg.norm(step_dir)
         step = (step_dir / length) * min(self.step_size, length)
         extended_config = near_config + step
-        
+
         return extended_config
 
     def find_plan(self):
@@ -131,9 +148,16 @@ class RRTMotionPlanner(object):
         while current_idx != start_idx:
             current_idx = self.tree.edges[current_idx]
             plan.append(self.tree.vertices[current_idx].config)
-        print("plan =\n", plan)
+        # print("plan =\n", plan)
         plan.reverse()
         return plan
+
+
+
+
+
+
+
 
         #pass
     # def dijkstra(self):
